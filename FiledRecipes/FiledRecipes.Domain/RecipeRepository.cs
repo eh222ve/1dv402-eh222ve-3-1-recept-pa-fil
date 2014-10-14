@@ -127,5 +127,72 @@ namespace FiledRecipes.Domain
                 handler(this, e);
             }
         }
+
+
+
+        public void Load()
+        {
+            StreamReader sr = new StreamReader(_path);
+            RecipeReadStatus status = RecipeReadStatus.Indefinite;
+            string line;
+
+            do
+            {
+                line = sr.ReadLine();
+                line.Trim();
+                switch (line)
+                {
+                    case SectionRecipe:
+                        status = RecipeReadStatus.New;
+                        break;
+                    case SectionIngredients:
+                        status = RecipeReadStatus.Ingredient;
+                        break;
+                    case SectionInstructions:
+                        status = RecipeReadStatus.Instruction;
+                        break;
+                    case "":
+                    case null:
+                        break;
+                    default:
+                        switch (status)
+	                    {
+                            case RecipeReadStatus.Indefinite:
+                                break;
+                            case RecipeReadStatus.New:
+                                Recipe recipe = new Recipe(line);
+                                _recipes.Add(recipe);
+                                break;
+                            case RecipeReadStatus.Ingredient:
+                                string[] ingredientArray = line.Split(';');
+                                Ingredient ingredient = new Ingredient();
+
+                                if (ingredientArray.Length != 3)
+                                {
+                                     throw new FileFormatException();
+                                }
+                                
+                                ingredient.Measure = ingredientArray[1];
+                                ingredient.Name = ingredientArray[2];
+
+                                _recipes[_recipes.Count - 1].Add(ingredient);
+                                break;
+                            case RecipeReadStatus.Instruction:
+                                _recipes[_recipes.Count - 1].Add(line);
+                                break;
+                            default:
+                                break;
+	                    }
+                        break;
+                }
+
+            } while (!sr.EndOfStream);
+            
+        }
+
+        public void Save()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
