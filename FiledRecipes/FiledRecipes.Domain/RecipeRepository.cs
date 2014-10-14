@@ -129,7 +129,10 @@ namespace FiledRecipes.Domain
         }
 
 
-
+        /// <summary>
+        /// Loads file and creates list-object
+        /// </summary>
+        /// <param></param>
         public void Load()
         {
             StreamReader sr = new StreamReader(_path);
@@ -138,10 +141,13 @@ namespace FiledRecipes.Domain
 
             do
             {
+                //Read line and remove whitespace
                 line = sr.ReadLine();
                 line.Trim();
+
                 switch (line)
                 {
+                    //See if RecipeReadStatus is matched 
                     case SectionRecipe:
                         status = RecipeReadStatus.New;
                         break;
@@ -151,10 +157,12 @@ namespace FiledRecipes.Domain
                     case SectionInstructions:
                         status = RecipeReadStatus.Instruction;
                         break;
+                    //Or if a blank row = continue loop
                     case "":
                     case null:
                         break;
                     default:
+                        //Else: look into status
                         switch (status)
 	                    {
                             case RecipeReadStatus.Indefinite:
@@ -171,7 +179,8 @@ namespace FiledRecipes.Domain
                                 {
                                      throw new FileFormatException();
                                 }
-                                
+
+                                ingredient.Amount = ingredientArray[0];
                                 ingredient.Measure = ingredientArray[1];
                                 ingredient.Name = ingredientArray[2];
 
@@ -187,7 +196,10 @@ namespace FiledRecipes.Domain
                 }
 
             } while (!sr.EndOfStream);
-            
+
+            _recipes = _recipes.OrderBy(r => r.Name).ToList();
+            IsModified = false;
+            OnRecipesChanged(EventArgs.Empty);
         }
 
         public void Save()
