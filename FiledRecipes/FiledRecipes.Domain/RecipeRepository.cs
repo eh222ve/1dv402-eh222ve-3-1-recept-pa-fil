@@ -138,6 +138,7 @@ namespace FiledRecipes.Domain
             StreamReader sr = new StreamReader(_path);
             RecipeReadStatus status = RecipeReadStatus.Indefinite;
             string line;
+           //_recipes = new List<IRecipe>();
 
             do
             {
@@ -204,7 +205,35 @@ namespace FiledRecipes.Domain
 
         public void Save()
         {
-            throw new NotImplementedException();
+            StreamWriter writer = new StreamWriter(_path);
+
+            try
+            {
+                foreach (IRecipe recipe in _recipes)
+                {
+                    writer.WriteLine(SectionRecipe);
+                    writer.WriteLine(recipe.Name);
+
+                    writer.WriteLine(SectionIngredients);
+                    foreach (Ingredient ing in recipe.Ingredients)
+                    {
+                        writer.WriteLine(String.Format("{0};{1};{2}", ing.Amount, ing.Measure, ing.Name));
+                    }
+
+                    writer.WriteLine(SectionInstructions);
+                    foreach (string ins in recipe.Instructions)
+                    {
+                        writer.WriteLine(ins);
+                    }
+                }
+            }
+            finally
+            {
+                writer.Dispose();
+            }
+
+            IsModified = false;
+            OnRecipesChanged(EventArgs.Empty);
         }
     }
 }
