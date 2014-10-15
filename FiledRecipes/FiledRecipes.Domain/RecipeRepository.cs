@@ -132,104 +132,113 @@ namespace FiledRecipes.Domain
         /// <summary>
         /// Loads file and creates list-object
         /// </summary>
-        /// <param></param>
         public void Load()
         {
             StreamReader sr = new StreamReader(_path);
             RecipeReadStatus status = RecipeReadStatus.Indefinite;
             string line;
-           //_recipes = new List<IRecipe>();
 
-            do
+            List<IRecipe> recipes = new List<IRecipe>();
+            try
             {
-                //Read line and remove whitespace
-                line = sr.ReadLine();
-                line.Trim();
-
-                switch (line)
+                do
                 {
-                    //See if RecipeReadStatus is matched 
-                    case SectionRecipe:
-                        status = RecipeReadStatus.New;
-                        break;
-                    case SectionIngredients:
-                        status = RecipeReadStatus.Ingredient;
-                        break;
-                    case SectionInstructions:
-                        status = RecipeReadStatus.Instruction;
-                        break;
-                    //Or if a blank row = continue loop
-                    case "":
-                    case null:
-                        break;
-                    default:
-                        //Else: look into status
-                        switch (status)
-	                    {
-                            case RecipeReadStatus.Indefinite:
-                                break;
-                            case RecipeReadStatus.New:
-                                Recipe recipe = new Recipe(line);
-                                _recipes.Add(recipe);
-                                break;
-                            case RecipeReadStatus.Ingredient:
-                                string[] ingredientArray = line.Split(';');
-                                Ingredient ingredient = new Ingredient();
+                    //Read line and remove whitespace
+                    line = sr.ReadLine();
+                    line.Trim();
 
-                                if (ingredientArray.Length != 3)
-                                {
-                                     throw new FileFormatException();
-                                }
+                    switch (line)
+                    {
+                        //See if RecipeReadStatus is matched 
+                        case SectionRecipe:
+                            status = RecipeReadStatus.New;
+                            break;
+                        case SectionIngredients:
+                            status = RecipeReadStatus.Ingredient;
+                            break;
+                        case SectionInstructions:
+                            status = RecipeReadStatus.Instruction;
+                            break;
+                        //Or if a blank row = continue loop
+                        case "":
+                        case null:
+                            break;
+                        default:
+                            //Else: look into status
+                            switch (status)
+	                        {
+                                case RecipeReadStatus.Indefinite:
+                                    break;
+                                case RecipeReadStatus.New:
+                                    Recipe recipe = new Recipe(line);
+                                    recipes.Add(recipe);
+                                    break;
+                                case RecipeReadStatus.Ingredient:
+                                    string[] ingredientArray = line.Split(';');
+                                    Ingredient ingredient = new Ingredient();
 
-                                ingredient.Amount = ingredientArray[0];
-                                ingredient.Measure = ingredientArray[1];
-                                ingredient.Name = ingredientArray[2];
+                                    if (ingredientArray.Length != 3)
+                                    {
+                                         throw new FileFormatException();
+                                    }
 
-                                _recipes[_recipes.Count - 1].Add(ingredient);
-                                break;
-                            case RecipeReadStatus.Instruction:
-                                _recipes[_recipes.Count - 1].Add(line);
-                                break;
-                            default:
-                                break;
-	                    }
-                        break;
-                }
+                                    ingredient.Amount = ingredientArray[0];
+                                    ingredient.Measure = ingredientArray[1];
+                                    ingredient.Name = ingredientArray[2];
 
-            } while (!sr.EndOfStream);
+                                    recipes[recipes.Count - 1].Add(ingredient);
+                                    break;
+                                case RecipeReadStatus.Instruction:
+                                    recipes[recipes.Count - 1].Add(line);
+                                    break;
+                                default:
+                                    break;
+	                        }
+                            break;
+                    }
 
-            _recipes = _recipes.OrderBy(r => r.Name).ToList();
+                } while (!sr.EndOfStream);
+            }
+            finally
+            {
+                sr.Close();
+            }
+
+            _recipes = recipes.OrderBy(r => r.Name).ToList();
             IsModified = false;
             OnRecipesChanged(EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Saves content to file
+        /// </summary>
         public void Save()
         {
-            StreamWriter writer = new StreamWriter(_path);
+            StreamWriter wr = new StreamWriter(_path);
 
             try
             {
                 foreach (IRecipe recipe in _recipes)
                 {
-                    writer.WriteLine(SectionRecipe);
-                    writer.WriteLine(recipe.Name);
+                    wr.WriteLine(SectionRecipe);
+                    wr.WriteLine(recipe.Name);
 
-                    writer.WriteLine(SectionIngredients);
+                    wr.WriteLine(SectionIngredients);
                     foreach (Ingredient ing in recipe.Ingredients)
                     {
-                        writer.WriteLine(String.Format("{0};{1};{2}", ing.Amount, ing.Measure, ing.Name));
+                        wr.WriteLine(String.Format("{0};{1};{2}", ing.Amount, ing.Measure, ing.Name));
                     }
 
-                    writer.WriteLine(SectionInstructions);
+                    wr.WriteLine(SectionInstructions);
                     foreach (string ins in recipe.Instructions)
                     {
-                        writer.WriteLine(ins);
+                        wr.WriteLine(ins);
                     }
                 }
             }
             finally
             {
-                writer.Dispose();
+                wr.Close();
             }
 
             IsModified = false;
