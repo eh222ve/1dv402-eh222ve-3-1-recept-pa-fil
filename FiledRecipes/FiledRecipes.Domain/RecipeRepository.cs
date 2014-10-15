@@ -186,13 +186,13 @@ namespace FiledRecipes.Domain
                                     ingredient.Measure = ingredientArray[1];
                                     ingredient.Name = ingredientArray[2];
 
-                                    recipes[recipes.Count - 1].Add(ingredient);
+                                    recipes.Last().Add(ingredient);
                                     break;
                                 case RecipeReadStatus.Instruction:
-                                    recipes[recipes.Count - 1].Add(line);
+                                    recipes.Last().Add(line);
                                     break;
                                 default:
-                                    break;
+                                    throw new FileFormatException();
 	                        }
                             break;
                     }
