@@ -134,13 +134,13 @@ namespace FiledRecipes.Domain
         /// </summary>
         public void Load()
         {
-            StreamReader sr = new StreamReader(_path);
-            RecipeReadStatus status = RecipeReadStatus.Indefinite;
-            string line;
-
             List<IRecipe> recipes = new List<IRecipe>();
-            try
-            {
+
+            using(StreamReader sr = new StreamReader(_path))
+	        {
+                string line;
+                RecipeReadStatus status = RecipeReadStatus.Indefinite;
+
                 do
                 {
                     //Read line and remove whitespace
@@ -196,12 +196,7 @@ namespace FiledRecipes.Domain
 	                        }
                             break;
                     }
-
                 } while (!sr.EndOfStream);
-            }
-            finally
-            {
-                sr.Close();
             }
 
             _recipes = recipes.OrderBy(r => r.Name).ToList();
@@ -214,11 +209,10 @@ namespace FiledRecipes.Domain
         /// </summary>
         public void Save()
         {
-            StreamWriter wr = new StreamWriter(_path);
 
-            try
-            {
-                foreach (IRecipe recipe in _recipes)
+           using(StreamWriter wr = new StreamWriter(_path))
+	        {
+		        foreach (IRecipe recipe in _recipes)
                 {
                     wr.WriteLine(SectionRecipe);
                     wr.WriteLine(recipe.Name);
@@ -235,11 +229,7 @@ namespace FiledRecipes.Domain
                         wr.WriteLine(ins);
                     }
                 }
-            }
-            finally
-            {
-                wr.Close();
-            }
+	        }
 
             IsModified = false;
             OnRecipesChanged(EventArgs.Empty);
