@@ -136,7 +136,7 @@ namespace FiledRecipes.Domain
         {
             List<IRecipe> recipes = new List<IRecipe>();
 
-            using(StreamReader sr = new StreamReader(_path))
+            using(StreamReader reader = new StreamReader(_path))
 	        {
                 string line;
                 RecipeReadStatus status = RecipeReadStatus.Indefinite;
@@ -144,7 +144,7 @@ namespace FiledRecipes.Domain
                 do
                 {
                     //Read line and remove whitespace
-                    line = sr.ReadLine();
+                    line = reader.ReadLine();
                     line.Trim();
 
                     switch (line)
@@ -196,10 +196,14 @@ namespace FiledRecipes.Domain
 	                        }
                             break;
                     }
-                } while (!sr.EndOfStream);
+                } while (!reader.EndOfStream);
             }
+            //remove unused space in list
+            recipes.TrimExcess();
 
+            //save list to class field
             _recipes = recipes.OrderBy(r => r.Name).ToList();
+
             IsModified = false;
             OnRecipesChanged(EventArgs.Empty);
         }
@@ -210,23 +214,23 @@ namespace FiledRecipes.Domain
         public void Save()
         {
 
-           using(StreamWriter wr = new StreamWriter(_path))
+           using(StreamWriter writer = new StreamWriter(_path))
 	        {
 		        foreach (IRecipe recipe in _recipes)
                 {
-                    wr.WriteLine(SectionRecipe);
-                    wr.WriteLine(recipe.Name);
+                    writer.WriteLine(SectionRecipe);
+                    writer.WriteLine(recipe.Name);
 
-                    wr.WriteLine(SectionIngredients);
-                    foreach (Ingredient ing in recipe.Ingredients)
+                    writer.WriteLine(SectionIngredients);
+                    foreach (Ingredient ingredient in recipe.Ingredients)
                     {
-                        wr.WriteLine(String.Format("{0};{1};{2}", ing.Amount, ing.Measure, ing.Name));
+                        writer.WriteLine(String.Format("{0};{1};{2}", ingredient.Amount, ingredient.Measure, ingredient.Name));
                     }
 
-                    wr.WriteLine(SectionInstructions);
-                    foreach (string ins in recipe.Instructions)
+                    writer.WriteLine(SectionInstructions);
+                    foreach (string instruction in recipe.Instructions)
                     {
-                        wr.WriteLine(ins);
+                        writer.WriteLine(instruction);
                     }
                 }
 	        }
