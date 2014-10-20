@@ -24,6 +24,7 @@ namespace FiledRecipes.Views
             ShowHeaderPanel();
 
             Console.WriteLine(Strings.Ingredients);
+
             for (int i = 0; i < Strings.Ingredients.Length; i++)
             {
                 Console.Write("-");
@@ -61,7 +62,7 @@ namespace FiledRecipes.Views
             foreach (IRecipe recipe in recipes)
             {
                 Show(recipe);
-                this.ContinueOnKeyPressed();
+                ContinueOnKeyPressed();
                 Console.Clear();
             }
 
