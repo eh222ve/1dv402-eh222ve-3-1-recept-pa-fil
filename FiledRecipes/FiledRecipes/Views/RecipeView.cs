@@ -31,9 +31,9 @@ namespace FiledRecipes.Views
             }
             Console.WriteLine();
 
-            foreach (IIngredient ing in recipe.Ingredients)
+            foreach (IIngredient ingredient in recipe.Ingredients)
             {
-                Console.WriteLine(ing.ToString());
+                Console.WriteLine(ingredient.ToString());
             }
 
             Console.WriteLine();
@@ -47,10 +47,10 @@ namespace FiledRecipes.Views
 
             int j = 1;
 
-            foreach (string ins in recipe.Instructions)
+            foreach (string instruction in recipe.Instructions)
             {
                 Console.WriteLine("<{0}>", j++);
-                Console.WriteLine(ins.ToString());
+                Console.WriteLine(instruction.ToString());
 
             }
 		}
